@@ -12,6 +12,4 @@ const io = socketIo(server, {
 const RoomsManager = require("./RoomsManager")
 const roomsManager = new RoomsManager(io)
 
-
-
-server.listen(4000, ()=>{console.log("server iniciado 2")})
+server.listen(4000, ()=>{console.log("server iniciado")})

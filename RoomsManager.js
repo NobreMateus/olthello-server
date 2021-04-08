@@ -43,23 +43,17 @@ class RoomsManager {
                 this.updateBoardState(data.roomName, data.pos, data.userTurn)
             })
         
-            // connection.on("disconnect", () => {
-            //     gameState = [
-            //         '-', '-', '-', '-', '-', '-', '-', '-',
-            //         '-', '-', '-', '-', '-', '-', '-', '-',
-            //         '-', '-', '-', '-', '-', '-', '-', '-',
-            //         '-', '-', '-', '-', '-', '-', '-', '-',
-            //         '-', '-', '-', '-', '-', '-', '-', '-',
-            //         '-', '-', '-', '-', '-', '-', '-', '-',
-            //         '-', '-', '-', '-', '-', '-', '-', '-',
-            //         '-', '-', '-', '-', '-', '-', '-', '-',
-            //     ]
-            //     userTurn = 'x'
-            //     this.socket.to("first room").emit("updateBoardState", {
-            //         gameState: gameState,
-            //         playerTurn: userTurn
-            //     })
-            // })
+            //Implementar a Logia de Desconexão
+
+            connection.on("newMessage", (data) => {
+                console.log("Nova Mensagem Recebida")
+                console.log(data)
+                this.socket.to(data.roomName).emit("newMessage", {
+                    user: data.user,
+                    message: data.message,
+                    userType: "data.userType" 
+                })
+            })
         })
     }
 
