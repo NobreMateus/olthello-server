@@ -31,7 +31,7 @@ class RoomsManager {
                 const currentRoom = Room.getRoomByName(this.rooms, data.roomName)
                 if(currentRoom === undefined) return
 
-                this.updateBoardState(data.roomName, data.pos, connection.id)
+                this.updateBoardState(data.roomName, data.x, data.y, connection.id)
             })
         
             //Implementar a Logia de Desconexão
@@ -64,12 +64,12 @@ class RoomsManager {
         this.socket.emit("getRooms", this.rooms)
     }
 
-    updateBoardState(roomName, pos, userId) {
+    updateBoardState(roomName, x, y, userId) {
         const currentRoom = Room.getRoomByName(this.rooms, roomName)
         if(currentRoom === undefined) return
         // if(currentRoom.userTurn !== type) return
 
-        currentRoom.updateBoardState(pos, userId)
+        currentRoom.updateBoardState(x, y, userId)
         this.sendBoardState(roomName)
 
         

@@ -1,7 +1,7 @@
+const LogicGameManager = require("./LogicGameManager")
 
 class Room {
 
-    // id: 1, name: "first room", userTurn: 'x', amountPlayers: 1, boardState: this.initialGameState.concat(), arrPos: 0, amountUsers: 0, user1Id: '', user2Id: ''
     id
     name
     amountUsers
@@ -24,14 +24,14 @@ class Room {
         this.arrPos = arrPos
         this.isFull = false
         this.boardState = [
-            '-', '-', '-', '-', '-', '-', '-', '-',
-            '-', '-', '-', '-', '-', '-', '-', '-',
-            '-', '-', '-', '-', '-', '-', '-', '-',
-            '-', '-', '-', 'x', 'o', '-', '-', '-',
-            '-', '-', '-', 'o', 'x', '-', '-', '-',
-            '-', '-', '-', '-', '-', '-', '-', '-',
-            '-', '-', '-', '-', '-', '-', '-', '-',
-            '-', '-', '-', '-', '-', '-', '-', '-',
+            ['-', '-', '-', '-', '-', '-', '-', '-'],
+            ['-', '-', '-', '-', '-', '-', '-', '-'],
+            ['-', '-', '-', '-', '-', '-', '-', '-'],
+            ['-', '-', '-', 'x', 'o', '-', '-', '-'],
+            ['-', '-', '-', 'o', 'x', '-', '-', '-'],
+            ['-', '-', '-', '-', '-', '-', '-', '-'],
+            ['-', '-', '-', '-', '-', '-', '-', '-'],
+            ['-', '-', '-', '-', '-', '-', '-', '-'],
         ]
     }
 
@@ -78,65 +78,27 @@ class Room {
         return false
     }
 
-    updateBoardState(pos, userId) {
-
-        console.log(pos)
-        console.log(userId)
-        console.log(this.user1Id)
-        console.log(this.user2Id)
+    updateBoardState(x, y, userId) {
 
         if(this.userTurn === 'x') {
-            console.log("Entrei 1")
             if(userId !== this.user1Id) return
-            this.boardState[pos] = this.userTurn
+            this.boardState[x][y] = this.userTurn
+            this.checkNewResult(x, y, 'x')
             this.userTurn = 'o'
         }
 
         if(this.userTurn === 'o') {
-            console.log("Entrei 2")
             if(userId !== this.user2Id) return
-            this.boardState[pos] = this.userTurn
+            this.boardState[x][y] = this.userTurn
+            this.checkNewResult(x, y, 'o')
             this.userTurn = 'x'
         }
     }
 
-    checkNewResult() {
-        var gameState = [
-            ['-', '-', '-', '-', '-', '-', '-', '-'],
-            ['-', '-', '-', '-', '-', '-', '-', '-'],
-            ['-', '-', '-', '-', '-', 'o', '-', '-'],
-            ['-', '-', '-', 'x', 'x', '-', 'x', '-'],
-            ['-', '-', '-', 'o', 'x', '-', '-', 'x'],
-            ['-', '-', '-', '-', '-', '-', '-', '-'],
-            ['-', '-', '-', '-', '-', '-', '-', '-'],
-            ['-', '-', '-', '-', '-', '-', '-', '-'],
-        ]
+    checkNewResult(x, y, type) {
+        const logicGameManager = new LogicGameManager()
+        this.boardState = logicGameManager.setGameState(this.boardState, x, y, type)
     }
-
-    setDiag1(gamesState, x, y, currentType) {
-        newX = parseInt(x)
-        newY = parseInt(y)
-        let advType
-        currentType==='x' ? advType = 'o' : advType = 'x' 
-        let changesCount = 0
-        let currentPos
-
-        do {
-            newX = newX + 1
-            newY = newY + 1
-            
-            if(gamesState[newX]) currentPos = gamesState[newX][newY]
-            else currentPos = undefined
-
-            if (currentPos === currentType) break
-            if (currentPos === advType) changesCount = changesCount + 1
-            if (currentPos === undefined || currentPos === '-') changesCount = 0
-
-        } while (currentPos !== undefined || currentPos !== '-') 
-
-        return changesCount
-    }
-
 }
 
 module.exports = Room
