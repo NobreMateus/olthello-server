@@ -20,6 +20,8 @@ class Room {
     boardState
     arrPos
     user1Id = ""
+    user1Name = ""
+    user2Name = ""
     user2Id = ""
     isFull
 
@@ -46,14 +48,15 @@ class Room {
         ]
     }
 
-    addUser(userId, userConnection, socket, rooms) {
+    addUser(userId, userName, userConnection, socket, rooms) {
         if(this.isFull) return false
 
         if(this.user1Id === ""){
             this.user1Id = userId
+            this.user1Name = userName
             this.amountUsers = this.amountUsers + 1
             if(this.amountUsers === 2) this.isFull = true
-            
+
             userConnection.on("disconnect", () => {
                 socket.to(this.name).emit("endGame", {
                     message: `Player 1 desconectou`,
@@ -80,6 +83,7 @@ class Room {
 
         if(this.user2Id === ""){
             this.user2Id = userId
+            this.user2Name = userName
             this.amountUsers = this.amountUsers + 1
             if(this.amountUsers === 2) this.isFull = true
             
@@ -125,6 +129,8 @@ class Room {
         ]
         this.user1Id = ""
         this.user2Id = ""
+        this.user1Name = ""
+        this.user2Name = ""
     }
 
     removeUser(userId) {

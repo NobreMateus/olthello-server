@@ -24,7 +24,7 @@ class RoomsManager {
 
             connection.on("enterRoom", (data)=>{
                 console.log("entrei na room: " + data.roomName )
-                this.startNewGame(data.roomName, connection)
+                this.startNewGame(data.roomName, data.userName, connection)
             })
 
             connection.on("updateGame", (data)=>{
@@ -48,7 +48,7 @@ class RoomsManager {
         })
     }
 
-    startNewGame(roomName, userConnection) {
+    startNewGame(roomName, userName,userConnection) {
         const currentRoom = Room.getRoomByName(this.rooms, roomName)
         if(currentRoom.isFull) {
             console.log("Room Cheia")
@@ -68,11 +68,20 @@ class RoomsManager {
             return      
         }  
 
-        currentRoom.addUser(userConnection.id, userConnection, this.socket, this.rooms)
+        currentRoom.addUser(userConnection.id, userName, userConnection, this.socket, this.rooms)
         userConnection.join(roomName)
         this.socket.to(roomName).emit("startGame", {
             gameState: this.rooms[currentRoom.arrPos].boardState,
             userTurn: this.rooms[currentRoom.arrPos].userTurn
+        })
+
+        console.log(currentRoom.user1Name)
+        console.log(currentRoom.user2Name)
+
+        this.socket.to(roomName).emit("getInfo", {
+            user1Name: currentRoom.user1Name,
+            user2Name: currentRoom.user2Name,
+            roomName: currentRoom.name
         })
 
         this.socket.emit("getRooms", this.rooms)
