@@ -1,25 +1,15 @@
+const Room = require('./Room')
+
 class RoomsManager {
     
     socket
-    
-    initialGameState = [
-        '-', '-', '-', '-', '-', '-', '-', '-',
-        '-', '-', '-', '-', '-', '-', '-', '-',
-        '-', '-', '-', '-', '-', '-', '-', '-',
-        '-', '-', '-', '-', '-', '-', '-', '-',
-        '-', '-', '-', '-', '-', '-', '-', '-',
-        '-', '-', '-', '-', '-', '-', '-', '-',
-        '-', '-', '-', '-', '-', '-', '-', '-',
-        '-', '-', '-', '-', '-', '-', '-', '-',
-    ]
-    firstUserTurn = 'x'
+  
     rooms = [
-        {id: 1, name: "first room", userTurn: 'x', amountPlayers: 1, boardState: this.initialGameState.concat(), arrPos: 0},
-        {id: 2, name: "second room", userTurn: 'x', amountPlayers: 1, boardState: this.initialGameState.concat(), arrPos: 1},
-        {id: 3, name: "third room", userTurn: 'x', amountPlayers: 1, boardState: this.initialGameState.concat(), arrPos: 2},
-        {id: 4, name: "fourth room", userTurn: 'x', amountPlayers: 1, boardState: this.initialGameState.concat(), arrPos: 3},
-        {id: 5, name: "fifth room", userTurn: 'x', amountPlayers: 1, boardState: this.initialGameState.concat(), arrPos: 4},
+        new Room(1, 0, "first"),
+        new Room(2, 1, "second"),
+        new Room(3, 2, "third")
     ]
+
 
     constructor(socket) {
         this.socket = socket
@@ -38,11 +28,10 @@ class RoomsManager {
             })
 
             connection.on("updateGame", (data)=>{
-                console.log(data.roomName)
-                const currentRoom = this.getRoomDataFromName(data.roomName)
+                const currentRoom = Room.getRoomByName(this.rooms, data.roomName)
                 if(currentRoom === undefined) return
 
-                this.updateBoardState(data.roomName, data.pos, data.userTurn)
+                this.updateBoardState(data.roomName, data.pos, connection.id)
             })
         
             //Implementar a Logia de Desconexão
@@ -60,35 +49,34 @@ class RoomsManager {
     }
 
     startNewGame(roomName, userConnection) {
-        //Logica para verificar se a sala não está cheia
-        const currentRoom = this.getRoomDataFromName(roomName)
-        // if(currentRoom === undefined) {
-        //     this.rooms.push({name: roomName, ...this.roomInitialState})
-        // }
+        const currentRoom = Room.getRoomByName(this.rooms, roomName)
+        if(currentRoom.isFull) {
+            console.log("Room Cheia")
+            userConnection.emit("fullRoom", roomName)
+            return
+        }
+        currentRoom.addUser(userConnection.id, userConnection)
         userConnection.join(roomName)
         this.socket.to(roomName).emit("startGame", {
             gameState: this.rooms[currentRoom.arrPos].boardState,
             userTurn: this.rooms[currentRoom.arrPos].userTurn
         })
+        this.socket.emit("getRooms", this.rooms)
     }
 
-    updateBoardState(roomName, pos, type) {
-        console.log("Excutei")
-        const currentRoom = this.getRoomDataFromName(roomName)
+    updateBoardState(roomName, pos, userId) {
+        const currentRoom = Room.getRoomByName(this.rooms, roomName)
         if(currentRoom === undefined) return
-        if(currentRoom.userTurn !== type) return
+        // if(currentRoom.userTurn !== type) return
 
-        if(currentRoom.boardState[pos] === '-') {
-            this.rooms[currentRoom.arrPos].boardState[pos] = type
-            // currentRoom.boardState[pos] = type
-            currentRoom.userTurn==='x'?currentRoom.userTurn='o':currentRoom.userTurn='x'
-            
-            this.sendBoardState(roomName)
-        }
+        currentRoom.updateBoardState(pos, userId)
+        this.sendBoardState(roomName)
+
+        
     }
 
     sendBoardState(roomName) {
-        const currentRoom = this.getRoomDataFromName(roomName)
+        const currentRoom = Room.getRoomByName(this.rooms, roomName)
         if(currentRoom === undefined) return 
         this.socket.to(roomName).emit("updateBoardState", {
             gameState: currentRoom.boardState,
@@ -99,6 +87,10 @@ class RoomsManager {
     getRoomDataFromName(roomName) {
         const room = this.rooms.find(r => r.name === roomName)
         return room
+    }
+
+    getAllRooms() {
+
     }
 }
 
