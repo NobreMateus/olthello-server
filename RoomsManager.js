@@ -87,7 +87,6 @@ class RoomsManager {
     updateBoardState(roomName, x, y, userId) {
         const currentRoom = Room.getRoomByName(this.rooms, roomName)
         if(currentRoom === undefined) return
-        // if(currentRoom.userTurn !== type) return
 
         currentRoom.updateBoardState(x, y, userId)
         this.sendBoardState(roomName)
@@ -103,9 +102,35 @@ class RoomsManager {
         })
 
         this.socket.to(roomName).emit("setPontuation", {
+            userTurn: currentRoom.userTurn,
             user1Points: currentRoom.user1Points,
             user2Points: currentRoom.user2Points
         })
+
+        if(currentRoom.user1Points + currentRoom.user2Points === 64){
+
+            console.log("ACABOU")
+
+            var winner = '-'
+
+            if(currentRoom.user1Points > currentRoom.user2Points) winner = currentRoom.user1Name
+            if(currentRoom.user1Points < currentRoom.user2Points) winner = currentRoom.user1Name 
+
+            if(winner === '-')
+                this.socket.to(roomName).emit("winnerGame", {
+                    message: `O jogo terminou empatado!!`,
+                    winner: 'Player 2'
+                })
+            else
+                this.socket.to(roomName).emit("winnerGame", {
+                    message: `O jogo finalizou ${winner} é o grande vencedor!!! Parabéns`,
+                    winner: winner
+                })
+            
+            currentRoom.restartRoom()
+
+        }
+            
     }
 
     getRoomDataFromName(roomName) {

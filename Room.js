@@ -2,17 +2,6 @@ const LogicGameManager = require("./LogicGameManager")
 
 class Room {
 
-    initialBoard = [
-        ['-', '-', '-', '-', '-', '-', '-', '-'],
-        ['-', '-', '-', '-', '-', '-', '-', '-'],
-        ['-', '-', '-', '-', '-', '-', '-', '-'],
-        ['-', '-', '-', 'x', 'o', '-', '-', '-'],
-        ['-', '-', '-', 'o', 'x', '-', '-', '-'],
-        ['-', '-', '-', '-', '-', '-', '-', '-'],
-        ['-', '-', '-', '-', '-', '-', '-', '-'],
-        ['-', '-', '-', '-', '-', '-', '-', '-'],
-    ]
-
     id
     name
     amountUsers
@@ -25,6 +14,8 @@ class Room {
     user2Id = ""
     user1Points = 0
     user2Points = 0
+    user1Con
+    user2Con
     isFull
 
     static getRoomByName(allRooms, roomName) {
@@ -41,10 +32,10 @@ class Room {
         this.boardState = [
             ['-', '-', '-', '-', '-', '-', '-', '-'],
             ['-', '-', '-', '-', '-', '-', '-', '-'],
-            ['-', '-', '-', '-', '-', '-', '-', '-'],
-            ['-', '-', '-', 'x', 'o', '-', '-', '-'],
-            ['-', '-', '-', 'o', 'x', '-', '-', '-'],
-            ['-', '-', '-', '-', '-', '-', '-', '-'],
+            ['-', '-', '-', '-', 'p', '-', '-', '-'],
+            ['-', '-', '-', 'x', 'o', 'p', '-', '-'],
+            ['-', '-', 'p', 'o', 'x', '-', '-', '-'],
+            ['-', '-', '-', 'p', '-', '-', '-', '-'],
             ['-', '-', '-', '-', '-', '-', '-', '-'],
             ['-', '-', '-', '-', '-', '-', '-', '-'],
         ]
@@ -58,6 +49,7 @@ class Room {
             this.user1Name = userName
             this.amountUsers = this.amountUsers + 1
             if(this.amountUsers === 2) this.isFull = true
+            // this.user1Con = userConnection
 
             userConnection.on("disconnect", () => {
                 socket.to(this.name).emit("endGame", {
@@ -88,7 +80,8 @@ class Room {
             this.user2Name = userName
             this.amountUsers = this.amountUsers + 1
             if(this.amountUsers === 2) this.isFull = true
-            
+            // this.user2Con = userConnection
+
             userConnection.on("disconnect", () => {
                 userConnection.leave(this.name)
                 socket.to(this.name).emit("endGame", {
@@ -122,10 +115,10 @@ class Room {
         this.boardState = [
             ['-', '-', '-', '-', '-', '-', '-', '-'],
             ['-', '-', '-', '-', '-', '-', '-', '-'],
-            ['-', '-', '-', '-', '-', '-', '-', '-'],
-            ['-', '-', '-', 'x', 'o', '-', '-', '-'],
-            ['-', '-', '-', 'o', 'x', '-', '-', '-'],
-            ['-', '-', '-', '-', '-', '-', '-', '-'],
+            ['-', '-', '-', '-', 'p', '-', '-', '-'],
+            ['-', '-', '-', 'x', 'o', 'p', '-', '-'],
+            ['-', '-', 'p', 'o', 'x', '-', '-', '-'],
+            ['-', '-', '-', 'p', '-', '-', '-', '-'],
             ['-', '-', '-', '-', '-', '-', '-', '-'],
             ['-', '-', '-', '-', '-', '-', '-', '-'],
         ]
@@ -170,6 +163,9 @@ class Room {
     checkNewResult(x, y, type) {
         const logicGameManager = new LogicGameManager()
         this.boardState = logicGameManager.setGameState(this.boardState, x, y, type)
+        let newType
+        type === 'x' ? newType = 'o' : newType = 'x'
+        logicGameManager.checkAllPosssiblePositions(this.boardState, newType)
         const pontuation = logicGameManager.getPontuations(this.boardState)
         this.user1Points = pontuation.user1Points
         this.user2Points = pontuation.user2Points
