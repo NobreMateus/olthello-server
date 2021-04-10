@@ -75,9 +75,6 @@ class RoomsManager {
             userTurn: this.rooms[currentRoom.arrPos].userTurn
         })
 
-        console.log(currentRoom.user1Name)
-        console.log(currentRoom.user2Name)
-
         this.socket.to(roomName).emit("getInfo", {
             user1Name: currentRoom.user1Name,
             user2Name: currentRoom.user2Name,
@@ -94,7 +91,6 @@ class RoomsManager {
 
         currentRoom.updateBoardState(x, y, userId)
         this.sendBoardState(roomName)
-
         
     }
 
@@ -104,6 +100,11 @@ class RoomsManager {
         this.socket.to(roomName).emit("updateBoardState", {
             gameState: currentRoom.boardState,
             userTurn: currentRoom.userTurn
+        })
+
+        this.socket.to(roomName).emit("setPontuation", {
+            user1Points: currentRoom.user1Points,
+            user2Points: currentRoom.user2Points
         })
     }
 

@@ -23,6 +23,8 @@ class Room {
     user1Name = ""
     user2Name = ""
     user2Id = ""
+    user1Points = 0
+    user2Points = 0
     isFull
 
     static getRoomByName(allRooms, roomName) {
@@ -168,6 +170,9 @@ class Room {
     checkNewResult(x, y, type) {
         const logicGameManager = new LogicGameManager()
         this.boardState = logicGameManager.setGameState(this.boardState, x, y, type)
+        const pontuation = logicGameManager.getPontuations(this.boardState)
+        this.user1Points = pontuation.user1Points
+        this.user2Points = pontuation.user2Points
     }
 
     desconnectUser(userConnection) {

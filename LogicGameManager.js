@@ -46,6 +46,20 @@ class LogicGameManager {
             gameState[newX][newY] = currentType
         }
     }
+
+    getPontuations(gameState) {
+        
+        var countUser1 = 0
+        var countUser2 = 0
+
+        for(var r = 0; r<8; r++) {
+            for(var c = 0; c< 8; c++) {
+                if(gameState[r][c] === 'x') countUser1 = countUser1 + 1
+                if(gameState[r][c] === 'o') countUser2 = countUser2 + 1
+            }
+        }
+        return { user1Points: countUser1, user2Points: countUser2 }
+    }
 }
 
 module.exports = LogicGameManager
