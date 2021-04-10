@@ -2,6 +2,17 @@ const LogicGameManager = require("./LogicGameManager")
 
 class Room {
 
+    initialBoard = [
+        ['-', '-', '-', '-', '-', '-', '-', '-'],
+        ['-', '-', '-', '-', '-', '-', '-', '-'],
+        ['-', '-', '-', '-', '-', '-', '-', '-'],
+        ['-', '-', '-', 'x', 'o', '-', '-', '-'],
+        ['-', '-', '-', 'o', 'x', '-', '-', '-'],
+        ['-', '-', '-', '-', '-', '-', '-', '-'],
+        ['-', '-', '-', '-', '-', '-', '-', '-'],
+        ['-', '-', '-', '-', '-', '-', '-', '-'],
+    ]
+
     id
     name
     amountUsers
@@ -35,18 +46,35 @@ class Room {
         ]
     }
 
-    addUser(userId, userConnection) {
+    addUser(userId, userConnection, socket, rooms) {
         if(this.isFull) return false
 
         if(this.user1Id === ""){
             this.user1Id = userId
             this.amountUsers = this.amountUsers + 1
             if(this.amountUsers === 2) this.isFull = true
+            
             userConnection.on("disconnect", () => {
-                this.user1Id = ""
-                this.amountUsers = this.amountUsers - 1
-                this.isFull = false
+                socket.to(this.name).emit("endGame", {
+                    message: `Player 1 desconectou`,
+                    winner: 'Player 2'
+                })
+                userConnection.leave(this.name)
+                this.restartRoom()
+                socket.emit("getRooms", rooms)
             })
+            userConnection.on("giveUp", () => {
+                console.log("Player 2  desistiu")
+                userConnection.leave(this.name)
+                socket.to(this.name).emit("endGame", {
+                    message: `Player 1 desistiu`,
+                    winner: 'Player 2'
+                })
+                userConnection.leave(this.name)
+                this.restartRoom()
+                socket.emit("getRooms", rooms)
+            })
+
             return true
         }
 
@@ -54,15 +82,49 @@ class Room {
             this.user2Id = userId
             this.amountUsers = this.amountUsers + 1
             if(this.amountUsers === 2) this.isFull = true
+            
             userConnection.on("disconnect", () => {
-                this.user2Id = ""
-                this.amountUsers = this.amountUsers - 1
-                this.isFull = false
+                userConnection.leave(this.name)
+                socket.to(this.name).emit("endGame", {
+                    message: `Player 2 desconectou`,
+                    winner: 'Player 1'
+                })
+                this.restartRoom()
+                socket.emit("getRooms", rooms)
             })
+            userConnection.on("giveUp", () => {
+                userConnection.leave(this.name)
+                console.log("Player 1  desistiu")
+                socket.to(this.name).emit("endGame", {
+                    message: `Player 2 desistiu`,
+                    winner: 'Player 1'
+                })
+                this.restartRoom()
+                socket.emit("getRooms", rooms)
+            })
+
             return true
         }
 
         return false
+    }
+
+    restartRoom() {
+        this.amountUsers = 0
+        this.userTurn = 'x'
+        this.isFull = false
+        this.boardState = [
+            ['-', '-', '-', '-', '-', '-', '-', '-'],
+            ['-', '-', '-', '-', '-', '-', '-', '-'],
+            ['-', '-', '-', '-', '-', '-', '-', '-'],
+            ['-', '-', '-', 'x', 'o', '-', '-', '-'],
+            ['-', '-', '-', 'o', 'x', '-', '-', '-'],
+            ['-', '-', '-', '-', '-', '-', '-', '-'],
+            ['-', '-', '-', '-', '-', '-', '-', '-'],
+            ['-', '-', '-', '-', '-', '-', '-', '-'],
+        ]
+        this.user1Id = ""
+        this.user2Id = ""
     }
 
     removeUser(userId) {
@@ -100,6 +162,10 @@ class Room {
     checkNewResult(x, y, type) {
         const logicGameManager = new LogicGameManager()
         this.boardState = logicGameManager.setGameState(this.boardState, x, y, type)
+    }
+
+    desconnectUser(userConnection) {
+        userConnection.leave(this.name)
     }
 }
 

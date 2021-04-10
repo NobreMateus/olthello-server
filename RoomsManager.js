@@ -52,15 +52,29 @@ class RoomsManager {
         const currentRoom = Room.getRoomByName(this.rooms, roomName)
         if(currentRoom.isFull) {
             console.log("Room Cheia")
-            userConnection.emit("fullRoom", roomName)
+            userConnection.emit("cantEnterRoom", {
+                roomName: roomName,
+                message: "Sala está cheia"
+            })
             return
         }
-        currentRoom.addUser(userConnection.id, userConnection)
+
+        if(this.roomOfUser(userConnection.id) !== undefined){
+            console.log("User Já pertence a uma room")
+            userConnection.emit("cantEnterRoom", {
+                roomName: roomName,
+                message: "Esse usuário já está em uma sala"
+            })
+            return      
+        }  
+
+        currentRoom.addUser(userConnection.id, userConnection, this.socket, this.rooms)
         userConnection.join(roomName)
         this.socket.to(roomName).emit("startGame", {
             gameState: this.rooms[currentRoom.arrPos].boardState,
             userTurn: this.rooms[currentRoom.arrPos].userTurn
         })
+
         this.socket.emit("getRooms", this.rooms)
     }
 
@@ -91,6 +105,13 @@ class RoomsManager {
 
     getAllRooms() {
 
+    }
+
+    roomOfUser(id) {
+        for(let room of this.rooms) {
+            if(room.user1Id === id || room.user2Id === id) return room
+        }
+        return undefined
     }
 }
 
