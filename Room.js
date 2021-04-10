@@ -80,6 +80,8 @@ class Room {
 
     updateBoardState(x, y, userId) {
 
+        if(this.user1Id === "" || this.user2Id === "") return
+
         if(this.userTurn === 'x') {
             if(userId !== this.user1Id) return
             this.boardState[x][y] = this.userTurn
